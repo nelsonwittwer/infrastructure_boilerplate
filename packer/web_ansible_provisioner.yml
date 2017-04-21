@@ -1,0 +1,10 @@
+---
+- hosts: [localhost]
+  become: True
+  roles:
+    - geerlingguy.ruby
+    - geerlingguy.git
+    - geerlingguy.nginx
+    - geerlingguy.postgresql
+    - dev-sec.os-hardening
+    - dev-sec.nginx-hardening

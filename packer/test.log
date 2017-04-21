@@ -1,0 +1,15 @@
+2017-04-20 22:29:10,237 p=28465 u=nelson |  ERROR! Unexpected Exception: 'Host' object has no attribute 'remove_group'
+2017-04-20 22:29:10,237 p=28465 u=nelson |  to see the full traceback, use -vvv
+2017-04-20 22:29:10,239 p=28465 u=nelson |  the full traceback was:
+
+Traceback (most recent call last):
+  File "/usr/local/bin/ansible-playbook", line 103, in <module>
+    exit_code = cli.run()
+  File "/usr/local/Cellar/ansible/2.2.2.0/libexec/lib/python2.7/site-packages/ansible/cli/playbook.py", line 132, in run
+    inventory = Inventory(loader=loader, variable_manager=variable_manager, host_list=self.options.inventory)
+  File "/usr/local/Cellar/ansible/2.2.2.0/libexec/lib/python2.7/site-packages/ansible/inventory/__init__.py", line 97, in __init__
+    self.parse_inventory(host_list)
+  File "/usr/local/Cellar/ansible/2.2.2.0/libexec/lib/python2.7/site-packages/ansible/inventory/__init__.py", line 181, in parse_inventory
+    host.remove_group(ungrouped)
+AttributeError: 'Host' object has no attribute 'remove_group'
+

@@ -1,0 +1,40 @@
+{
+  "builders": [{
+    "type": "amazon-ebs",
+    "ami_virtualization_type": "hvm",
+    "associate_public_ip_address": "true",
+    "vpc_id": "vpc-04248e62",
+    "subnet_id": "subnet-478ee76a",
+    "region": "us-east-1",
+    "instance_type": "t2.micro",
+    "ssh_username": "ubuntu",
+    "ami_regions" : ["us-east-1"],
+    "ami_name": "ubuntu-16.04-encrypted-base-{{timestamp}}",
+    "encrypt_boot": "true",
+    "source_ami_filter": {
+      "filters": {
+        "virtualization-type": "hvm",
+        "name": "*ubuntu-xenial-16.04-amd64-server-*",
+        "root-device-type": "ebs"
+      },
+      "owners": ["099720109477"],
+      "most_recent": true
+    }
+  }],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "sudo apt-get -y install software-properties-common",
+        "sudo apt-add-repository ppa:ansible/ansible",
+        "sudo apt-get update",
+        "sudo apt-get -y install ansible"
+      ]
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "web_ansible_provisioner.yml",
+      "galaxy_file": "ansible_requirements.yml"
+    }
+  ]
+}
