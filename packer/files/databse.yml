@@ -1,0 +1,7 @@
+production:
+  adapter: postgres
+  encoding: utf8
+  database: {{ deploy_app_name }}_production
+  username: {{ deploy_app_name }}
+  password: {{ postgres_app_db_password }}
+  host: localhost

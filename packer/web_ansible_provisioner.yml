@@ -8,3 +8,73 @@
     - geerlingguy.postgresql
     - dev-sec.os-hardening
     - dev-sec.nginx-hardening
+  tasks:
+    - name: pull repo from remote git repository
+      git:
+        repo: {{ git_repo }}
+        dest: {{ deploy_dir }}
+    - name: Add deployment user
+        action: 'user name={{ deploy_user }} password={{ deploy_password }} generate_ssh_key=yes shell=/bin/bash'
+
+    - name: Add authorized deploy keys
+        action: "authorized_key user={{ deploy_user }} key=\"{{ lookup('file', item) }}\""
+          with_items: '{{ ssh_public_key_files }}'
+
+    - name: Remove sudo group rights
+        action: lineinfile dest=/etc/sudoers regexp="^%sudo" state=absent
+
+    - name: Add deploy user to sudoers
+        action: 'lineinfile dest=/etc/sudoers regexp="{{ deploy_user }} ALL" line="{{ deploy_user }} ALL=(ALL) NOPASSWD: ALL" state=present'
+
+    - name: Disallow root SSH access
+        action: lineinfile dest=/etc/ssh/sshd_config regexp="^PermitRootLogin" line="PermitRootLogin no" state=present
+          notify: Restart sshd
+
+    - name: Disallow password authentication
+        action: lineinfile dest=/etc/ssh/sshd_config regexp="^PasswordAuthentication" line="PasswordAuthentication no" state=present
+          notify: Restart sshd
+
+    - name: Create deploy dir
+      file: path={{ deploy_dir }}{{ deploy_app_name }} state=directory owner={{ deploy_user }} group={{ deploy_user }}
+
+    - name: Create releases dir
+      file: path={{ deploy_dir }}{{ deploy_app_name }}/releases state=directory owner={{ deploy_user }} group={{ deploy_user }}
+
+    - name: Create repo dir
+      file: path={{ deploy_dir }}{{ deploy_app_name }}/repo state=directory owner={{ deploy_user }} group={{ deploy_user }}
+
+    - name: Create shared dir
+      file: path={{ deploy_dir }}{{ deploy_app_name }}/shared state=directory owner={{ deploy_user }} group={{ deploy_user }}
+
+    - name: Create shared/config dir
+      file: path={{ deploy_dir }}{{ deploy_app_name }}/shared/config state=directory owner={{ deploy_user }} group={{ deploy_user }}
+
+    - name: Create shared/log dir
+      file: path={{ deploy_dir }}{{ deploy_app_name }}/shared/log state=directory owner={{ deploy_user }} group={{ deploy_user }}
+
+    - name: Create shared/public dir
+      file: path={{ deploy_dir }}{{ deploy_app_name }}/shared/public state=directory owner={{ deploy_user }} group={{ deploy_user }}
+
+    - name: Create shared/tmp dir
+      file: path={{ deploy_dir }}{{ deploy_app_name }}/shared/tmp state=directory owner={{ deploy_user }} group={{ deploy_user }}
+
+    - name: Copy database.yml
+      template: src=files/database.yml dest={{ deploy_dir }}{{ deploy_app_name }}/shared/config/database.yml owner={{ deploy_user }} group={{ deploy_user }}
+
+    - name: Copy puma.rb
+      template: src=files/puma.rb dest={{ deploy_dir }}{{ deploy_app_name }}/shared/puma.rb owner={{ deploy_user }} group={{ deploy_user }}
+
+    - name: Restart Nginx
+      service: name=nginx state=restarted enabled=yes
+
+    - name: Ensure Nginx is running
+      service: name=nginx state=started enabled=yes
+
+    - name: Copy nginx configuration (without HTTPS enabled)
+      template: src=nginx_app_config dest=/etc/nginx/sites-available/{{ deploy_app_name }} owner=root group=root
+
+    - name: Disable default config
+      file: path=/etc/nginx/sites-enabled/default state=absent
+
+    - name: Symlink to sites-enabled
+      file: src=/etc/nginx/sites-available/{{ deploy_app_name }} dest=/etc/nginx/sites-enabled/{{ deploy_app_name }} owner=root group=root state=link

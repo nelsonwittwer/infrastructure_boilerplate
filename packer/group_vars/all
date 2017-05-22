@@ -1,0 +1,13 @@
+# Project Variables
+deploy_dir: /var/www/nav
+deploy_user: deploy
+deploy_passwword:  DEPLOY_PASSWORD
+deploy_app_name: ENTER_APP_NAME
+git_repo: GIT_REPO
+
+# Rails Settings
+puma_workers: 4
+puma_threads: 4,16
+
+# Postgres Settings
+postgres_app_db_password: POSTGRES_PASSWORD
